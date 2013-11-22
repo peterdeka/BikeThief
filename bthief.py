@@ -12,9 +12,37 @@ def fetch_page(url):
     return r.text
 
 
+def fetch_single_product(url,category_arr):
+    return
+
+
 #da pagina con prodotti di una categoria lancia fetching dei singoli prodotti
 def fetch_products(url,category_arr):
     print category_arr
+    productspage=fetch_page(url)
+    if not productspage:
+        return
+    pprods=BeautifulSoup(productspage)    
+    prods=pprods.select("div.product-box")
+    print "{0} products in this section".format(len(prods))
+    for p in prods:
+        fetch_single_product(p,category_arr)
+
+    #vedo se ci sono altre pagine
+    pager=pprods.select("div.pages > ol")
+    #if pager:
+     #   for mp in pager.select("li"):
+      #      if "current" in li.get("class"):
+       #         continue
+        #    url=li.select("a")[0].get("href")
+    if pager:
+        nextl=pager[0].select("li a.next")
+        if nextl:
+            print "Has more"
+            url=nextl[0].get("href")
+            print url
+            fetch_products(url,category_arr)
+
     return
 
 #parsa una categoria in maniera ricorsiva, vede a che livello e agisce di conseguenza
