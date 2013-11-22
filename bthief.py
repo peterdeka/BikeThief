@@ -13,6 +13,20 @@ def fetch_page(url):
 
 
 def fetch_single_product(url,category_arr):
+    print "Fetching {0}".format(url)
+    page=fetch_page(url)
+    if not page:
+        print ">ERROR fetching product page"
+        return
+    prodsoup=BeautifulSoup(page)
+    product={'categories':category_arr}
+    product['name']=prodsoup.select("div.product-name h1")[0].getText()
+    product['manufacturer']=prodsoup.select("div#manufacturer_logo a")[0].get("title")
+    prices=prodsoup.select("span.price")
+    product['prices']=[]
+    for pr in prices:
+        product['prices'].append(pr.getText()) #TODO substring dopo punto e virgola
+    
     return
 
 
@@ -26,7 +40,7 @@ def fetch_products(url,category_arr):
     prods=pprods.select("div.product-box")
     print "{0} products in this section".format(len(prods))
     for p in prods:
-        fetch_single_product(p,category_arr)
+        fetch_single_product(p.select("a")[0].get("href"),category_arr)
 
     #vedo se ci sono altre pagine
     pager=pprods.select("div.pages > ol")
