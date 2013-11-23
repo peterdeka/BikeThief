@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-
-
+import pprint
+import re
 
 #fetch page
 def fetch_page(url):
@@ -18,15 +18,50 @@ def fetch_single_product(url,category_arr):
     if not page:
         print ">ERROR fetching product page"
         return
-    prodsoup=BeautifulSoup(page)
+    pprodsoup=BeautifulSoup(page)
+    prodsoup=pprodsoup.select('div.product-view')[0]
+    
     product={'categories':category_arr}
     product['name']=prodsoup.select("div.product-name h1")[0].getText()
     product['manufacturer']=prodsoup.select("div#manufacturer_logo a")[0].get("title")
-    prices=prodsoup.select("span.price")
+    prices=prodsoup.select('div.product-shop span.price')
     product['prices']=[]
     for pr in prices:
-        product['prices'].append(pr.getText()) #TODO substring dopo punto e virgola
-    
+        nums=re.findall(r'\d+',pr.getText())
+        product['prices'].append(float(nums[0])+float(nums[1])/100.0) #TODO substring dopo punto e virgola
+    product['short_desc']=prodsoup.select('div.short-description div.std')[0].getText()
+    product['desc']=prodsoup.select('div#product_tabs_description_tabbed_contents div.std')[0].getText()
+    product['imgurls']=[]
+    product['imgurls'].append(prodsoup.select('p.product-image > img#image')[0].get('src'))
+    #altre immagini
+    moreviews=prodsoup.select('div.more-views ul li a')
+    if len(moreviews)>1:
+        for i in range(1,len(moreviews)):
+            product['imgurls'].append(moreviews[i].get('href'))
+    #variazioni
+    optionsnames=prodsoup.select('div.product-options dt')
+    optionschoices=prodsoup.select('div.product-options dd')
+    product['variations']=[]
+    for i in range(0,len(optionsnames)):
+        v=optionsnames[i]
+        name=v.select('label')[0].getText()
+        opts=[]
+        first=True
+        for o in optionschoices[i].select('option'):
+            if first:
+                first=False
+                continue
+            opts.append(o.getText)
+        vn={'name':name,'opts':opts}
+        product['variations'].append(vn)
+
+
+    #DBG
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(product)
+
+
+
     return
 
 
