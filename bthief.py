@@ -31,6 +31,14 @@ def fetch_single_product(url,category_arr):
         product['prices'].append(float(nums[0])+float(nums[1])/100.0) #TODO substring dopo punto e virgola
     product['short_desc']=prodsoup.select('div.short-description div.std')[0].getText()
     product['desc']=prodsoup.select('div#product_tabs_description_tabbed_contents div.std')[0].getText()
+    #codice prodotto
+    product['code']=None
+    entries=prodsoup.select('div#product_tabs_additional_tabbed_contents tr')
+    for t in entries:
+        if t.select('th')[0].getText()=="Codice Prodotto":
+            product['code']=t.select('td')[0].getText(); 
+    if not product['code']:
+        print "**Error fetching product code for product {0}".format(url)
     product['imgurls']=[]
     product['imgurls'].append(prodsoup.select('p.product-image > img#image')[0].get('src'))
     #altre immagini
