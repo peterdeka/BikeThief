@@ -2,6 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import pprint
 import re
+from PrestaAdder import PrestaAdder
+
+pp = pprint.PrettyPrinter(indent=4)
+debug=False
+pa=PrestaAdder()
 
 #fetch page
 def fetch_page(url):
@@ -23,7 +28,11 @@ def fetch_single_product(url,category_arr):
     
     product={'categories':category_arr}
     product['name']=prodsoup.select("div.product-name h1")[0].getText()
-    product['manufacturer']=prodsoup.select("div#manufacturer_logo a")[0].get("title")
+    try:
+        product['manufacturer']=prodsoup.select("div#manufacturer_logo a")[0].get("title")
+    except:
+        product['manufacturer']=None
+        print "***Warning no manufacturer"
     prices=prodsoup.select('div.product-shop span.price')
     product['prices']=[]
     for pr in prices:
@@ -65,9 +74,10 @@ def fetch_single_product(url,category_arr):
 
 
     #DBG
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(product)
-
+    
+        pp.pprint(product)
+    
+        pa.add_product(product)
 
 
     return
@@ -75,7 +85,7 @@ def fetch_single_product(url,category_arr):
 
 #da pagina con prodotti di una categoria lancia fetching dei singoli prodotti
 def fetch_products(url,category_arr):
-    print category_arr
+    #print category_arr
     productspage=fetch_page(url)
     if not productspage:
         return
