@@ -120,12 +120,13 @@ class PrestaAdder:
         content   = fd.read()
         fd.close()
         #self.prestashop.add('images/products/{0}'.format(prodid), files=[('image',  content)])
-        files = {'image': ('image', open('tmp', 'rb'))}
+        files = {'image': ('image.png', open('tmp', 'rb'))}
         r=requests.post('http://prestaimport.wannaup.com/api/images/products/{0}'.format(prodid),files=files, auth=HTTPBasicAuth('DXLK6ILU2P17PWT1GXYAWXIE79UWS8Z6', ''))
         if r.status_code==200:
             print "image added"
         else:
             print "ERROROROROROROOR adding image {0}".format(r.status_code)
+            print r.text
 
 #aggiunge un prodotto
     def add_product(self,prod):
@@ -156,6 +157,10 @@ class PrestaAdder:
         p['active']='1'
         p['available_for_order']='1'
         p['show_price']='1'
+        n=len(prod['code'])
+        if n>31:
+            n=31
+        p['reference']=prod['code'][:n]
 
         try:
             r=self.prestashop.add("products",self.prodschema)
