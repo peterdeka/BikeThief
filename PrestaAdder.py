@@ -28,10 +28,18 @@ class PrestaAdder:
         self.prodschema=self.prestashop.get('products', options={'schema': 'blank'})
         self.manuschema=self.prestashop.get('manufacturers', options={'schema': 'blank'})
         self.skipcats={}
-        self.fetch_categories()
-        self.fetch_manufacturers()
+        #self.fetch_categories()
+        #self.fetch_manufacturers()
         self.pp = pprint.PrettyPrinter(indent=4)
+        self.fproderr = open('proderr','w')
+        self.fcaterr = open('caterr','w')
+
         print "PrestaAdder is ACTIVE, schemas loaded"
+
+
+    def close_errfiles(self):
+        self.fproderr.close()
+        self.fcaterr.close()
 
 
     #prendo tutte le categorie presenti sul server di destinazione
@@ -59,7 +67,7 @@ class PrestaAdder:
         wholestring=""
         fathercat=2 #home
         for c in cats:
-            wholestring=wholestring+c
+            wholestring=wholestring+'-'+c
             if not wholestring in self.categories:
                 catego=self.catschema['category']
                 catego['id_parent']='{0}'.format(fathercat)
@@ -75,6 +83,7 @@ class PrestaAdder:
                     r=self.prestashop.add('categories',self.catschema)
                 except:
                     print "***Error while adding category {0}".format(c)
+                    self.fcaterr.write("***Error while adding category {0}\n".format(c))
                     return None
 
                 self.categories[wholestring]=r['prestashop']['category']['id']
@@ -119,8 +128,9 @@ class PrestaAdder:
         fd        = io.open("tmp", "rb")
         content   = fd.read()
         fd.close()
+
         #self.prestashop.add('images/products/{0}'.format(prodid), files=[('image',  content)])
-        files = {'image': ('image.png', open('tmp', 'rb'))}
+        files = {'image': ('image-{0}.png'.format(idx), open('tmp', 'rb'))}
         r=requests.post('http://prestaimport.wannaup.com/api/images/products/{0}'.format(prodid),files=files, auth=HTTPBasicAuth('DXLK6ILU2P17PWT1GXYAWXIE79UWS8Z6', ''))
         if r.status_code==200:
             print "image added"
@@ -145,8 +155,12 @@ class PrestaAdder:
         p=self.prodschema['product']
         p['price']='{0}'.format(prod['prices'][0])
         if len(prod['prices'])>1:
-            p['wholesale_price']='{0}'.format(prod['prices'][1])
-        p['link_rewrite']['language']['value']=prod['name'].replace(' ','-')
+            #p['wholesale_price']='{0}'.format(prod['prices'][1])
+            p['price']='{0}'.format(prod['prices'][1])
+        spl=prod['url'].split('/')
+        spl=spl[len(spl)-1]
+        spl=spl[:spl.find('.')]
+        p['link_rewrite']['language']['value']=spl
         p['name']['language']['value']=prod['name']
         p['id_category_default']=catid
         p['associations']['categories']['category']['id']=catid
@@ -157,20 +171,22 @@ class PrestaAdder:
         p['active']='1'
         p['available_for_order']='1'
         p['show_price']='1'
+        p['wholesale_price']=''
         n=len(prod['code'])
         if n>31:
             n=31
         p['reference']=prod['code'][:n]
-
-        try:
-            r=self.prestashop.add("products",self.prodschema)
-        except:
-            print "Error addding product"
-            self.pp.pprint(self.prodschema)
-            return False
+        self.pp.pprint(self.prodschema)
+        #try:
+        r=self.prestashop.add("products",self.prodschema)
+        # except:
+        #     print "Error addding product"
+        self.pp.pprint(self.prodschema)
+        #     self.fproderr.write('**Error adding product {0}\n'.format(prod['url']))
+        #     return False
         
         print "prod added id "+r['prestashop']['product']['id']
-        #TODO images
+        
         i=0
         for img in prod['imgurls']:
             self.add_prod_img(r['prestashop']['product']['id'],img,i)

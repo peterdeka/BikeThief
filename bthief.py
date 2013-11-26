@@ -8,6 +8,8 @@ pp = pprint.PrettyPrinter(indent=4)
 debug=False
 pa=PrestaAdder()
 
+fvariationserr= open('varerr','w')
+fmanuerr= open('manuerr','w')
 #fetch page
 def fetch_page(url):
     r = requests.get(url)
@@ -29,12 +31,18 @@ def fetch_single_product(url,category_arr):
     prodsoup=pprodsoup.select('div.product-view')[0]
     
     product={'categories':category_arr}
+    product['url']=url
     product['name']=prodsoup.select("div.product-name h1")[0].getText()
     try:
         product['manufacturer']=prodsoup.select("div#manufacturer_logo a")[0].get("title")
     except:
-        product['manufacturer']=None
-        print "***Warning no manufacturer"
+        if product['name'].find('Rock Shox'):
+            product['manufacturer']='Rock Shox'    
+        else:
+            product['manufacturer']=None
+            print "***Warning no manufacturer"
+            fmanuerr.write('***Warning no manufacturer {0}\n'.format(url))
+
     prices=prodsoup.select('div.product-shop span.price')
     product['prices']=[]
     for pr in prices:
@@ -47,7 +55,11 @@ def fetch_single_product(url,category_arr):
     entries=prodsoup.select('div#product_tabs_additional_tabbed_contents tr')
     for t in entries:
         if t.select('th')[0].getText()=="Codice Prodotto":
-            product['code']=t.select('td')[0].getText(); 
+            product['code']=t.select('td')[0].getText()
+        elif t.select('th')[0].getText()!="Nome":
+            product['desc']+='<p>'+ t.select('th')[0].getText()+'</p>'
+            product['desc']+='<p>'+ t.select('td')[0].getText()+'</p>'
+    
     if not product['code']:
         print "**Error fetching product code for product {0}".format(url)
     product['imgurls']=[]
@@ -73,11 +85,10 @@ def fetch_single_product(url,category_arr):
             opts.append(o.getText())
         vn={'name':name,'opts':opts}
         product['variations'].append(vn)
-
+    if len(product['variations'])>1:
+        fvariationserr.write('**Warning ignore variations for {0}\n'.format(url))
 
     #DBG
-    
-    
     
     pa.add_product(product)
 
@@ -142,6 +153,6 @@ if len(categories)<1:
 for li in categories:
     parse_category(li,[])
 
-
-
+fvariationserr.close()
+fmanuerr.close()
 
