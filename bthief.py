@@ -14,7 +14,9 @@ def fetch_page(url):
     if r.status_code != requests.codes.ok:
         print "Error fetching {0}".format(url)
         return None
-    return r.text
+    r.encoding = 'utf-8'
+
+    return r.text.replace(u'\xa0',u' ')
 
 
 def fetch_single_product(url,category_arr):
@@ -68,16 +70,16 @@ def fetch_single_product(url,category_arr):
             if first:
                 first=False
                 continue
-            opts.append(o.getText)
+            opts.append(o.getText())
         vn={'name':name,'opts':opts}
         product['variations'].append(vn)
 
 
     #DBG
     
-        pp.pprint(product)
     
-        pa.add_product(product)
+    
+    pa.add_product(product)
 
 
     return
