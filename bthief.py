@@ -57,8 +57,8 @@ def fetch_single_product(url,category_arr):
         if t.select('th')[0].getText()=="Codice Prodotto":
             product['code']=t.select('td')[0].getText()
         elif t.select('th')[0].getText()!="Nome":
-            product['desc']+='<p>'+ t.select('th')[0].getText()+'</p>'
-            product['desc']+='<p>'+ t.select('td')[0].getText()+'</p>'
+            product['desc']+='</p><p>'+t.select('th')[0].getText()+' '
+            product['desc']+=t.select('td')[0].getText()+'</p>'
     
     if not product['code']:
         print "**Error fetching product code for product {0}".format(url)
@@ -85,8 +85,8 @@ def fetch_single_product(url,category_arr):
             opts.append(o.getText())
         vn={'name':name,'opts':opts}
         product['variations'].append(vn)
-    if len(product['variations'])>1:
-        fvariationserr.write('**Warning ignore variations for {0}\n'.format(url))
+    if len(product['variations'])>0:
+        fvariationserr.write('**Warning ignoring variations for {0}\n'.format(url))
 
     #DBG
     
@@ -136,8 +136,8 @@ def parse_category(li,category_arr):
         url=li.select("a")[0].get("href")
         fetch_products(url,new_arr)
     else:
-        for subul in li.select("ul"):
-            for sub in subul.select("li"):
+        for subul in li.select("> ul"):
+            for sub in subul.select("> li"):
                 #print "SUB {0}".format(sub.select("a span")[0].getText())
                 parse_category(sub,new_arr)
 
@@ -146,7 +146,7 @@ mainpage=fetch_page("http://www.gambacicli.com")
 if not mainpage:
     exit()
 mainsoup = BeautifulSoup(mainpage)
-categories=mainsoup.select("ul#nav > li")
+categories=mainsoup.select("ul#nav > li.level0")
 if len(categories)<1:
     print "Error can't find nav menu"
     exit()

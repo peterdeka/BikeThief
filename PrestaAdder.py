@@ -67,12 +67,14 @@ class PrestaAdder:
         wholestring=""
         fathercat=2 #home
         for c in cats:
-            wholestring=wholestring+'-'+c
+            wholestring=wholestring+'_'+c
+            #print wholestring
             if not wholestring in self.categories:
                 catego=self.catschema['category']
                 catego['id_parent']='{0}'.format(fathercat)
                 catego['active']='1'
                 c=self.safeescape(c)
+                c=c.replace('.','')
                 catego['name']['language']['value']=c
                 catego['link_rewrite']['language']['value']=c.replace(' ','-')
                 #catego['description']['language']['value']=c
@@ -87,9 +89,10 @@ class PrestaAdder:
                     return None
 
                 self.categories[wholestring]=r['prestashop']['category']['id']
-                fathercat=self.categories[wholestring] #sara padre del prossimo
 
-        return self.categories[wholestring]
+            fathercat=self.categories[wholestring] #sara padre del prossimo
+
+        return fathercat
 
 
 #inserisce e ritrna manufacturer
@@ -140,17 +143,18 @@ class PrestaAdder:
 
 #aggiunge un prodotto
     def add_product(self,prod):
+        
         self.reset_prodschema()
         catid=self.add_categorytree(prod['categories'])
         manuid=self.add_manufacturer(prod['manufacturer'])
-
+        
         if not catid or not manuid:
             print "***Error adding product related"# {0}".format(prod['name'])
             return False
 
         prod['name']=self.safeescape(prod['name'])
-        prod['desc']=self.safeescape(prod['desc'])
-        prod['short_desc']=self.safeescape(prod['short_desc'])
+        #prod['desc']=self.safeescape(prod['desc'])
+        #prod['short_desc']=self.safeescape(prod['short_desc'])
         
         p=self.prodschema['product']
         p['price']='{0}'.format(prod['prices'][0])
@@ -176,14 +180,14 @@ class PrestaAdder:
         if n>31:
             n=31
         p['reference']=prod['code'][:n]
-        self.pp.pprint(self.prodschema)
-        #try:
-        r=self.prestashop.add("products",self.prodschema)
-        # except:
-        #     print "Error addding product"
-        self.pp.pprint(self.prodschema)
-        #     self.fproderr.write('**Error adding product {0}\n'.format(prod['url']))
-        #     return False
+        #self.pp.pprint(self.prodschema)
+        try:
+            r=self.prestashop.add("products",self.prodschema)
+        except:
+            print "Error addding product"
+            self.pp.pprint(self.prodschema)
+            self.fproderr.write('**Error adding product {0}\n'.format(prod['url']))
+            return False
         
         print "prod added id "+r['prestashop']['product']['id']
         
