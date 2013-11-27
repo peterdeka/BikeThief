@@ -21,7 +21,7 @@ import io
 class PrestaAdder:
     
     def __init__(self):
-        self.prestashop = PrestaShopWebServiceDict('http://prestaimport.wannaup.com/api', 'DXLK6ILU2P17PWT1GXYAWXIE79UWS8Z6')  # messages will be as dict
+        self.prestashop = PrestaShopWebServiceDict('http://www.casalinisport.com/api', 'QAOHGC3FFW9SCOC9MBUVDWNCHB759IYW')  # messages will be as dict
         self.categories={}
         self.manufacturers={}
         self.catschema=self.prestashop.get('categories', options={'schema': 'blank'})
@@ -65,7 +65,7 @@ class PrestaAdder:
     def add_categorytree(self,cats):
         #inserisco le categorie se non ci sono
         wholestring=""
-        fathercat=2 #home
+        fathercat=35 #home
         for c in cats:
             wholestring=wholestring+'_'+c
             #print wholestring
@@ -81,13 +81,14 @@ class PrestaAdder:
                 #catego['description']['language']['value']="mah un abella nuova categoria"
                 self.catschema['category']=catego
                 #print self.catschema
+                
                 try:
                     r=self.prestashop.add('categories',self.catschema)
                 except:
                     print "***Error while adding category {0}".format(c)
                     self.fcaterr.write("***Error while adding category {0}\n".format(c))
                     return None
-
+                
                 self.categories[wholestring]=r['prestashop']['category']['id']
 
             fathercat=self.categories[wholestring] #sara padre del prossimo
@@ -134,12 +135,19 @@ class PrestaAdder:
 
         #self.prestashop.add('images/products/{0}'.format(prodid), files=[('image',  content)])
         files = {'image': ('image-{0}.png'.format(idx), open('tmp', 'rb'))}
-        r=requests.post('http://prestaimport.wannaup.com/api/images/products/{0}'.format(prodid),files=files, auth=HTTPBasicAuth('DXLK6ILU2P17PWT1GXYAWXIE79UWS8Z6', ''))
-        if r.status_code==200:
+        try:
+            r=requests.post('http://www.casalinisport.com/api/images/products/{0}'.format(prodid),files=files, auth=HTTPBasicAuth('QAOHGC3FFW9SCOC9MBUVDWNCHB759IYW', ''))
+        except:
+            print "ERROROROROROROOR adding image {0}".format(r.status_code)
+            print r.text
+            fproderr.write('***Error adding product image for product {0}'.format(prodid))
+            return
+        if r.status_code==200 or r.status_code==201:
             print "image added"
         else:
             print "ERROROROROROROOR adding image {0}".format(r.status_code)
             print r.text
+            fproderr.write('***Error adding product image for product {0}'.format(prodid))
 
 #aggiunge un prodotto
     def add_product(self,prod):
