@@ -166,10 +166,15 @@ class PrestaAdder:
         #prod['short_desc']=self.safeescape(prod['short_desc'])
         
         p=self.prodschema['product']
-        p['price']='{0}'.format(prod['prices'][0])
-        if len(prod['prices'])>1:
-            #p['wholesale_price']='{0}'.format(prod['prices'][1])
-            p['price']='{0}'.format(prod['prices'][1])
+        try:
+            p['price']='{0}'.format(prod['prices'][0])
+            if len(prod['prices'])>1:
+                #p['wholesale_price']='{0}'.format(prod['prices'][1])
+                p['price']='{0}'.format(prod['prices'][1])
+        except:
+            self.fproderr.write('**ERROR no price for this product\n')
+            print '**ERROR no price for this product'
+            p['price']='1'
         spl=prod['url'].split('/')
         spl=spl[len(spl)-1]
         spl=spl[:spl.find('.')]

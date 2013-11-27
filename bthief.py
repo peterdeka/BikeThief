@@ -150,8 +150,12 @@ categories=mainsoup.select("ul#nav > li.level0")
 if len(categories)<1:
     print "Error can't find nav menu"
     exit()
-for li in categories:
-    parse_category(li,[])
+
+for j in range(4:len(categories))
+    parse_category(categories[j],[])
+
+#for li in categories:
+ #   parse_category(li,[])
 
 fvariationserr.close()
 fmanuerr.close()
