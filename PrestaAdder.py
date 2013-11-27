@@ -140,14 +140,14 @@ class PrestaAdder:
         except:
             print "ERROROROROROROOR adding image {0}".format(r.status_code)
             print r.text
-            fproderr.write('***Error adding product image for product {0}'.format(prodid))
+            self.fproderr.write('***Error adding product image for product {0}'.format(prodid))
             return
         if r.status_code==200 or r.status_code==201:
             print "image added"
         else:
             print "ERROROROROROROOR adding image {0}".format(r.status_code)
             print r.text
-            fproderr.write('***Error adding product image for product {0}'.format(prodid))
+            self.fproderr.write('***Error adding product image for product {0}'.format(prodid))
 
 #aggiunge un prodotto
     def add_product(self,prod):
