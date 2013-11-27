@@ -180,8 +180,8 @@ class PrestaAdder:
             p['id_manufacturer']=manuid
         p['description']['language']['value']=prod['desc']
         p['description_short']['language']['value']=prod['short_desc']
-        p['active']='1'
-        p['available_for_order']='1'
+        p['active']='0'
+        #p['available_for_order']='1'
         p['show_price']='1'
         p['wholesale_price']=''
         n=len(prod['code'])
