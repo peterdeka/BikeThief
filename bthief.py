@@ -151,7 +151,7 @@ if len(categories)<1:
     print "Error can't find nav menu"
     exit()
 
-for j in range(4:len(categories))
+for j in range(4,len(categories))
     parse_category(categories[j],[])
 
 #for li in categories:
