@@ -158,6 +158,7 @@ class PrestaAdder:
         
         if not catid or not manuid:
             print "***Error adding product related"# {0}".format(prod['name'])
+            self.fproderr.write("***Error adding product related {0}".format(prod['url']))
             return False
 
         prod['name']=self.safeescape(prod['name'])
@@ -192,8 +193,8 @@ class PrestaAdder:
         try:
             r=self.prestashop.add("products",self.prodschema)
         except:
-            print "Error addding product"
-            self.pp.pprint(self.prodschema)
+            print '**Error adding product {0}\n'.format(prod['url'])
+            #self.pp.pprint(self.prodschema)
             self.fproderr.write('**Error adding product {0}\n'.format(prod['url']))
             return False
         

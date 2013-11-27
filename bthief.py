@@ -104,7 +104,7 @@ def fetch_products(url,category_arr):
         return
     pprods=BeautifulSoup(productspage)    
     prods=pprods.select("div.product-box")
-    print "{0} products in this section".format(len(prods))
+    #print "{0} products in this section".format(len(prods))
     for p in prods:
         fetch_single_product(p.select("a")[0].get("href"),category_arr)
 
@@ -118,9 +118,9 @@ def fetch_products(url,category_arr):
     if pager:
         nextl=pager[0].select("li a.next")
         if nextl:
-            print "Has more"
+            #print "Has more"
             url=nextl[0].get("href")
-            print url
+            #print url
             fetch_products(url,category_arr)
 
     return
